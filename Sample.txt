@@ -1,0 +1,68 @@
+GraphQL Mutation React using Apollo Client
+
+import React, { useState } from 'react';
+import { gql, useMutation } from '@apollo/client';
+
+interface AddPostInput {
+  title: string;
+  body: string;
+}
+
+interface AddPostData {
+  addPost: {
+    id: number;
+    title: string;
+    body: string;
+  };
+}
+
+const ADD_POST_MUTATION = gql`
+  mutation AddPost($input: AddPostInput!) {
+    addPost(input: $input) {
+      id
+      title
+      body
+    }
+  }
+`;
+
+function AddPost() {
+  const [input, setInput] = useState<AddPostInput>({ title: '', body: '' });
+
+  const [addPost, { loading, error }] = useMutation<AddPostData>(ADD_POST_MUTATION, {
+    onCompleted: () => {
+      setInput({ title: '', body: '' });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    addPost({
+      variables: { input },
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Title"
+        value={input.title}
+        onChange={e => setInput({ ...input, title: e.target.value })}
+      />
+      <input
+        type="text"
+        placeholder="Body"
+        value={input.body}
+        onChange={e => setInput({ ...input, body: e.target.value })}
+      />
+      <button type="submit" disabled={loading}>
+        Add Post
+      </button>
+      {error && <p>Error: {error.message}</p>}
+    </form>
+  );
+}
+
+export default AddPost;
